@@ -16,6 +16,31 @@
         <option value="tr">Türkçe</option>
         <option value="en">English</option>
       </select>
+      <label for="category" class="block mb-2 font-medium"
+        >Ürün Kategorisi:</label
+      >
+      <select id="category" class="w-full p-3 border rounded mb-4">
+        <option value="diğer">Diğer</option>
+        <option value="giyim">Giyim</option>
+        <option value="ayakkabı">Ayakkabı</option>
+        <option value="aksesuar">Aksesuar</option>
+        <option value="elektronik">Elektronik</option>
+        <option value="bilgisayar">Bilgisayar / Tablet</option>
+        <option value="telefon">Telefon / Aksesuar</option>
+        <option value="ev">Ev Ürünleri</option>
+        <option value="mutfak">Mutfak Gereçleri</option>
+        <option value="mobilya">Mobilya</option>
+        <option value="dekorasyon">Dekorasyon</option>
+        <option value="kozmetik">Kozmetik</option>
+        <option value="kişisel bakım">Kişisel Bakım</option>
+        <option value="kitap">Kitap</option>
+        <option value="oyuncak">Oyuncak</option>
+        <option value="bebek">Bebek Ürünleri</option>
+        <option value="anne">Anne Ürünleri</option>
+        <option value="spor">Spor / Outdoor</option>
+        <option value="evcil">Evcil Hayvan Ürünleri</option>
+        <option value="otomobil">Otomobil Aksesuarları</option>
+      </select>
 
       <input
         id="productInput"
@@ -74,8 +99,8 @@
 
           const userPrompt =
             lang === "tr"
-              ? `Ürün adı: ${productName}`
-              : `Product name: ${productName}`;
+              ? `Ürün adı: ${productName}. Kategori: ${category}`
+              : `Product name: ${productName}. Category: ${category}`;
 
           try {
             const response = await fetch(

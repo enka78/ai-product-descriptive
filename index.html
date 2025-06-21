@@ -42,6 +42,15 @@
         <option value="otomobil">Otomobil Aksesuarları</option>
       </select>
 
+      <label for="length" class="block mb-2 font-medium"
+        >Açıklama Uzunluğu:</label
+      >
+      <select id="length" class="w-full p-3 border rounded mb-4">
+        <option value="kısa">Kısa (1–2 cümle)</option>
+        <option value="orta" selected>Orta (3–5 cümle)</option>
+        <option value="uzun">Uzun (detaylı açıklama)</option>
+      </select>
+
       <input
         id="productInput"
         type="text"
@@ -84,6 +93,8 @@
           const lang = document.getElementById("language").value;
           const copyBtn = document.getElementById("copyBtn");
 
+          const length = document.getElementById("length").value;
+
           if (!productName) {
             alert("Lütfen bir ürün adı girin.");
             return;
@@ -99,8 +110,8 @@
 
           const userPrompt =
             lang === "tr"
-              ? `Ürün adı: ${productName}. Kategori: ${category}`
-              : `Product name: ${productName}. Category: ${category}`;
+              ? `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`
+              : `Product name: ${productName}. Category: ${category}. Description length: ${length}.`;
 
           try {
             const response = await fetch(

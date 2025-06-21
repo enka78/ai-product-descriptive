@@ -6,8 +6,8 @@
     <title>AI Ürün Açıklayıcı</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
       <h1 class="text-2xl font-bold mb-4 text-center">🛍️ AI Ürün Açıklayıcı</h1>
       <label for="language" class="block mb-2 font-medium"
         >Açıklama Dili:</label
@@ -25,14 +25,14 @@
       />
       <button
         id="generateBtn"
-        class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition"
+        class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition font-semibold"
       >
         Açıklama Oluştur
       </button>
       <div id="result" class="mt-6 text-gray-700 whitespace-pre-wrap"></div>
       <button
         id="copyBtn"
-        class="mt-4 w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 transition hidden"
+        class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition font-medium mt-4"
       >
         Açıklamayı Kopyala
       </button>

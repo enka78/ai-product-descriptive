@@ -6,9 +6,9 @@
     <title>AI Ürün Açıklayıcı</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
-    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-      <h1 class="text-2xl font-bold mb-4 text-center">🛍️ AI Ürün Açıklayıcı</h1>
+  <body class="bg-[url('https://picsum.photos/seed/picsum/1920/1080')] bg-cover bg-center bg-no-repeat bg-fixed min-h-screen m-0 flex items-center justify-center p-6">
+    <div class="bg-black-0.6 p-6 rounded-xl shadow-2xl w-full max-w-xl ">
+      <h1 class="text-3xl font-bold mb-4 text-center">🛍️ AI Ürün Açıklayıcı</h1>
       <label for="language" class="block mb-2 font-medium"
         >Açıklama Dili:</label
       >
@@ -63,22 +63,52 @@
       >
         Açıklama Oluştur
       </button>
-      <div id="result" class="mt-6 text-gray-700 whitespace-pre-wrap"></div>
-      <button
-        id="copyBtn"
-        class="hidden w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition font-medium mt-4"
-      >
-        Açıklamayı Kopyala
-      </button>
+      <div
+        id="result"
+        class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
+      ></div>
+      <div id="descActions" class="mt-2 flex justify-center gap-2 hidden">
+        <button
+          id="copyBtn"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm"
+        >
+          Kopyala
+        </button>
+        <button
+          id="downloadDesc"
+          class="bg-gray-700 hover:bg-black text-white py-1 px-3 rounded text-sm"
+        >
+          İndir
+        </button>
+      </div>
       <button
         id="generateInsta"
-        class="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded"
+        class="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded"
       >
         Instagram Postu Oluştur
       </button>
+      <div
+        id="instaResult"
+        class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
+      ></div>
+
+      <div id="instaActions" class="mt-2 flex justify-center gap-2 hidden">
+        <button
+          id="copyInsta"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm"
+        >
+          Kopyala
+        </button>
+        <button
+          id="downloadInsta"
+          class="bg-gray-700 hover:bg-black text-white py-1 px-3 rounded text-sm"
+        >
+          İndir
+        </button>
+      </div>
       <button
         id="generateSEO"
-        class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded"
       >
         SEO Metni Oluştur
       </button>
@@ -87,11 +117,20 @@
         id="seoResult"
         class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
       ></div>
-
-      <div
-        id="instaResult"
-        class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
-      ></div>
+      <div id="seoActions" class="mt-2 flex justify-center gap-2 hidden">
+        <button
+          id="copySEO"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm"
+        >
+          Kopyala
+        </button>
+        <button
+          id="downloadSEO"
+          class="bg-gray-700 hover:bg-black text-white py-1 px-3 rounded text-sm"
+        >
+          İndir
+        </button>
+      </div>
 
       <a
         href="https://www.buymeacoffee.com/enginkayalw"
@@ -107,87 +146,80 @@
     </div>
 
     <script>
-      const API_KEY =
-        "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";
+      // 🔐 Groq API anahtarını değişken olarak tanımla
+      const GROQ_API_KEY = "Bearer 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";
+
+      // ✅ Ortak indirme fonksiyonu
+      function downloadText(filename, text) {
+        const blob = new Blob([text], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+      }
+
+      // ✅ Ürün Açıklaması Üret
       document
         .getElementById("generateBtn")
         .addEventListener("click", async () => {
           const productName = document
             .getElementById("productInput")
             .value.trim();
-          const lang = document.getElementById("language").value;
-          const category = document.getElementById("category").value;
-          const length = document.getElementById("length").value;
+          const category =
+            document.getElementById("category")?.value || "genel";
+          const length = document.getElementById("length")?.value || "orta";
 
-          const copyBtn = document.getElementById("copyBtn");
+          if (!productName) return alert("Lütfen ürün adını girin.");
 
-          if (!productName) {
-            alert("Lütfen bir ürün adı girin.");
-            return;
-          }
+          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
 
-          document.getElementById("result").innerText = "AI yazıyor...";
-          copyBtn.classList.add("hidden"); // önce gizle
+          const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: GROQ_API_KEY,
+              },
+              body: JSON.stringify({
+                model: "llama3-8b-8192",
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "Sen bir e-ticaret metin yazarı AI'sısın. Kullanıcı sana bir ürün adı verecek ve sen ona kısa ama ikna edici bir ürün açıklaması yazacaksın. Dil: Türkçe.",
+                  },
+                  {
+                    role: "user",
+                    content: prompt,
+                  },
+                ],
+              }),
+            }
+          );
 
-          const systemPrompt =
-            lang === "tr"
-              ? "Sen bir e-ticaret metin yazarı AI'sısın. Kullanıcı sana bir ürün adı verecek ve sen ona kısa ama ikna edici bir ürün açıklaması yazacaksın. Dil: Türkçe."
-              : "You are an AI e-commerce copywriter. The user will give you a product name, and you will return a short but compelling product description in English.";
+          const data = await response.json();
+          const result = data.choices?.[0]?.message?.content;
 
-          const userPrompt =
-            lang === "tr"
-              ? `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`
-              : `Product name: ${productName}. Category: ${category}. Description length: ${length}.`;
-
-          try {
-            const response = await fetch(
-              "https://api.groq.com/openai/v1/chat/completions",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                  model: "llama3-8b-8192",
-                  messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
-                  ],
-                }),
-              }
-            );
-
-            const data = await response.json();
-            const result =
-              data?.choices?.[0]?.message?.content ||
-              "AI'dan anlamlı yanıt alınamadı.";
-
-            document.getElementById("result").innerText = result;
-            copyBtn.classList.remove("hidden"); // başarıyla geldiyse butonu göster
-          } catch (error) {
-            console.error("Hata:", error);
-            document.getElementById("result").innerText =
-              "Bir hata oluştu: " + error.message;
-          }
+          document.getElementById("result").innerText =
+            result || "Bir şeyler ters gitti 😕";
+          document.getElementById("result").classList.remove("hidden");
+          document.getElementById("descActions").classList.remove("hidden");
         });
 
+      // ✅ Açıklama Kopyala / İndir
       document.getElementById("copyBtn").addEventListener("click", () => {
-        const text = document.getElementById("result").innerText;
-        navigator.clipboard
-          .writeText(text)
-          .then(() => {
-            const btn = document.getElementById("copyBtn");
-            btn.innerText = "✔️ Kopyalandı!";
-            setTimeout(() => {
-              btn.innerText = "Açıklamayı Kopyala";
-            }, 2000);
-          })
-          .catch((err) => {
-            alert("Kopyalama başarısız: " + err);
-          });
+        const content = document.getElementById("result").innerText;
+        navigator.clipboard.writeText(content);
+        alert("Açıklama kopyalandı!");
       });
 
+      document.getElementById("downloadDesc").addEventListener("click", () => {
+        const content = document.getElementById("result").innerText;
+        downloadText("urun_aciklamasi.txt", content);
+      });
+
+      // ✅ Instagram İçeriği Üret
       document
         .getElementById("generateInsta")
         .addEventListener("click", async () => {
@@ -198,10 +230,7 @@
             document.getElementById("category")?.value || "genel";
           const length = document.getElementById("length")?.value || "orta";
 
-          if (!productName) {
-            alert("Lütfen ürün adını girin.");
-            return;
-          }
+          if (!productName) return alert("Lütfen ürün adını girin.");
 
           const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
 
@@ -211,7 +240,7 @@
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: GROQ_API_KEY,
               },
               body: JSON.stringify({
                 model: "llama3-8b-8192",
@@ -233,10 +262,25 @@
           const data = await response.json();
           const result = data.choices?.[0]?.message?.content;
 
-          const output = document.getElementById("instaResult");
-          output.innerText = result || "Bir şeyler ters gitti 😕";
-          output.classList.remove("hidden");
+          document.getElementById("instaResult").innerText =
+            result || "Bir şeyler ters gitti 😕";
+          document.getElementById("instaResult").classList.remove("hidden");
+          document.getElementById("instaActions").classList.remove("hidden");
         });
+
+      // ✅ Instagram Kopyala / İndir
+      document.getElementById("copyInsta").addEventListener("click", () => {
+        const content = document.getElementById("instaResult").innerText;
+        navigator.clipboard.writeText(content);
+        alert("Instagram içeriği kopyalandı!");
+      });
+
+      document.getElementById("downloadInsta").addEventListener("click", () => {
+        const content = document.getElementById("instaResult").innerText;
+        downloadText("instagram_icerigi.txt", content);
+      });
+
+      // ✅ SEO Metni Üret
       document
         .getElementById("generateSEO")
         .addEventListener("click", async () => {
@@ -247,12 +291,9 @@
             document.getElementById("category")?.value || "genel";
           const length = document.getElementById("length")?.value || "orta";
 
-          if (!productName) {
-            alert("Lütfen ürün adını girin.");
-            return;
-          }
+          if (!productName) return alert("Lütfen ürün adını girin.");
 
-          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}. SEO başlık ve açıklama üret. Sadece Türkçe yaz.`;
+          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}. SEO başlık ve açıklama üret.`;
 
           const response = await fetch(
             "https://api.groq.com/openai/v1/chat/completions",
@@ -260,7 +301,7 @@
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: GROQ_API_KEY,
               },
               body: JSON.stringify({
                 model: "llama3-8b-8192",
@@ -282,10 +323,23 @@
           const data = await response.json();
           const result = data.choices?.[0]?.message?.content;
 
-          const output = document.getElementById("seoResult");
-          output.innerText = result || "Bir şeyler ters gitti 😕";
-          output.classList.remove("hidden");
+          document.getElementById("seoResult").innerText =
+            result || "Bir şeyler ters gitti 😕";
+          document.getElementById("seoResult").classList.remove("hidden");
+          document.getElementById("seoActions").classList.remove("hidden");
         });
+
+      // ✅ SEO Kopyala / İndir
+      document.getElementById("copySEO").addEventListener("click", () => {
+        const content = document.getElementById("seoResult").innerText;
+        navigator.clipboard.writeText(content);
+        alert("SEO metni kopyalandı!");
+      });
+
+      document.getElementById("downloadSEO").addEventListener("click", () => {
+        const content = document.getElementById("seoResult").innerText;
+        downloadText("seo_metni.txt", content);
+      });
     </script>
   </body>
 </html>

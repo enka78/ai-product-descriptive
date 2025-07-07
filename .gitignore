@@ -1,0 +1,35 @@
+# Ortak yapılandırma dosyaları
+.env
+.env.local
+.env.*.local
+
+# Node.js projeleri için
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# build dosyaları (özellikle React/Next.js gibi projelerde)
+dist/
+build/
+.out/
+
+# Geçici dosyalar
+.DS_Store
+Thumbs.db
+
+# VS Code kullanıcıları için
+.vscode/
+
+# IDE cache dosyaları
+.idea/
+*.swp
+*.swo
+
+# Sistem dosyaları
+*.log
+*.bak
+*.tmp
+
+# MacOS özel dosyaları
+__MACOSX/

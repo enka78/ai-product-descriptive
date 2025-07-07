@@ -147,8 +147,6 @@
     </div>
 
     <script>
-      // 🔐 Groq API anahtarını değişken olarak tanımla
-      const GROQ_API_KEY = "Bearer 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";
 
       // ✅ Ortak indirme fonksiyonu
       function downloadText(filename, text) {
@@ -180,7 +178,7 @@
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: GROQ_API_KEY,
+                Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
               },
               body: JSON.stringify({
                 model: "llama3-8b-8192",

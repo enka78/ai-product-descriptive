@@ -17,16 +17,14 @@
         Yapay zekâ destekli açıklamalarla ürünlerinizi saniyeler içinde
         etkileyici bir şekilde tanıtan, profesyonel metinler hazırlayın.
       </p>
-      <label for="language" class="block mb-2 font-medium"
-        >Açıklama Dili:</label
-      >
+
+      <label for="language" class="block mb-2 font-medium">Açıklama Dili:</label>
       <select id="language" class="w-full p-3 border rounded mb-4">
-        <option value="tr">Türkçe</option>
+        <option value="tr" selected>Türkçe</option>
         <option value="en">English</option>
       </select>
-      <label for="category" class="block mb-2 font-medium"
-        >Ürün Kategorisi:</label
-      >
+
+      <label for="category" class="block mb-2 font-medium">Ürün Kategorisi:</label>
       <select id="category" class="w-full p-3 border rounded mb-4">
         <option value="diğer">Diğer</option>
         <option value="giyim">Giyim</option>
@@ -50,9 +48,7 @@
         <option value="otomobil">Otomobil Aksesuarları</option>
       </select>
 
-      <label for="length" class="block mb-2 font-medium"
-        >Açıklama Uzunluğu:</label
-      >
+      <label for="length" class="block mb-2 font-medium">Açıklama Uzunluğu:</label>
       <select id="length" class="w-full p-3 border rounded mb-4">
         <option value="kısa">Kısa (1–2 cümle)</option>
         <option value="orta" selected>Orta (3–5 cümle)</option>
@@ -65,6 +61,7 @@
         placeholder="Ürün adını yazın..."
         class="w-full p-3 border rounded mb-4"
       />
+
       <!-- Ürün Açıklaması Butonu -->
       <button
         id="generateBtn"
@@ -94,7 +91,7 @@
         </svg>
       </button>
 
-            <div
+      <div
         id="result"
         class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
       ></div>
@@ -142,7 +139,7 @@
         </svg>
       </button>
 
-            <div
+      <div
         id="instaResult"
         class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
       ></div>
@@ -232,7 +229,123 @@
         link.click();
       }
 
-      // Butonlar ve spinnerlar
+      // Loading start/stop fonksiyonları
+      function startLoading(btn, textEl, spinnerEl) {
+        spinnerEl.classList.remove("hidden");
+        textEl.classList.add("hidden");
+        btn.disabled = true;
+        btn.classList.add("cursor-not-allowed", "opacity-60");
+      }
+      function stopLoading(btn, textEl, spinnerEl) {
+        spinnerEl.classList.add("hidden");
+        textEl.classList.remove("hidden");
+        btn.disabled = false;
+        btn.classList.remove("cursor-not-allowed", "opacity-60");
+      }
+
+      // Sistem mesajları (Türkçe ve İngilizce)
+      function getSystemPrompt(type, lang) {
+        const prompts = {
+          tr: {
+            description:
+              "Sen bir e-ticaret metin yazarı AI'sısın. Kullanıcı sana bir ürün adı verecek ve sen ona kısa ama ikna edici bir ürün açıklaması yazacaksın. Dil: Türkçe.",
+            insta:
+              "Sen bir e-ticaret sosyal medya uzmanı AI'sın. Kullanıcının verdiği ürün bilgilerine göre etkileyici bir Instagram postu ve alakalı hashtag'ler üret. Sadece Türkçe yaz. İlk satıra Instagram post metnini yaz, ikinci satıra 'Hashtagler:' yazıp hashtag listesini sırala.",
+            seo:
+              "Sen bir e-ticaret SEO uzmanı AI'sın. Verilen ürün bilgilerine göre Türkçe bir SEO meta başlığı (60 karakteri geçmesin) ve ardından bir meta açıklama (150–160 karakter) üret. Şu formatı koru:\n\nMeta Title: ...\nMeta Description: ...",
+          },
+          en: {
+            description:
+              "You are an e-commerce copywriter AI. The user will give you a product name, and you will write a short but persuasive product description in English.",
+            insta:
+              "You are an e-commerce social media expert AI. Generate an engaging Instagram post and relevant hashtags based on the user's product information. Write only in English. Write the Instagram post text on the first line, then write 'Hashtags:' followed by the hashtag list on the second line.",
+            seo:
+              "You are an e-commerce SEO expert AI. Generate an English SEO meta title (max 60 characters) and a meta description (150–160 characters) based on the given product info. Use this format:\n\nMeta Title: ...\nMeta Description: ...",
+          },
+        };
+        return prompts[lang]?.[type] || "";
+      }
+
+      // Dil bazlı alert mesajı
+      function alertMessage(lang, msgTR, msgEN) {
+        alert(lang === "en" ? msgEN : msgTR);
+      }
+
+      // Ortak API çağrı fonksiyonu
+      async function generateContent(type) {
+        const lang = document.getElementById("language").value || "tr";
+        const productName = document.getElementById("productInput").value.trim();
+        const category = document.getElementById("category").value || "diğer";
+        const length = document.getElementById("length").value || "orta";
+
+        if (!productName) {
+          alertMessage(lang, "Lütfen ürün adını girin.", "Please enter the product name.");
+          return;
+        }
+
+        // Prompt metni
+        const prompt = `${lang === "tr" ? "Ürün adı" : "Product name"}: ${productName}. ${lang === "tr" ? "Kategori" : "Category"}: ${category}. ${lang === "tr" ? "Açıklama uzunluğu" : "Description length"}: ${length}.`;
+
+        // Buton ve alanları seç
+        let btn, textEl, spinner, resultEl, actionsEl;
+
+        if (type === "description") {
+          btn = generateBtn;
+          textEl = btnText;
+          spinner = btnSpinner;
+          resultEl = document.getElementById("result");
+          actionsEl = document.getElementById("descActions");
+        } else if (type === "insta") {
+          btn = generateInstaBtn;
+          textEl = instaBtnText;
+          spinner = instaBtnSpinner;
+          resultEl = document.getElementById("instaResult");
+          actionsEl = document.getElementById("instaActions");
+        } else if (type === "seo") {
+          btn = generateSEOBtn;
+          textEl = seoBtnText;
+          spinner = seoBtnSpinner;
+          resultEl = document.getElementById("seoResult");
+          actionsEl = document.getElementById("seoActions");
+        }
+
+        startLoading(btn, textEl, spinner);
+
+        try {
+          const systemContent = getSystemPrompt(type, lang);
+          // SEO için prompt biraz farklı
+          const userPrompt = type === "seo" ? prompt + (lang === "tr" ? " SEO başlık ve açıklama üret." : " Generate SEO title and description.") : prompt;
+
+          const res = await fetch("/api/groq-proxy", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "llama3-8b-8192",
+              messages: [
+                { role: "system", content: systemContent },
+                { role: "user", content: userPrompt },
+              ],
+            }),
+          });
+
+          if (!res.ok) throw new Error("API error");
+
+          const data = await res.json();
+          const text = data.choices?.[0]?.message?.content || (lang === "en" ? "Something went wrong 😕" : "Bir şeyler ters gitti 😕");
+
+          resultEl.innerText = text;
+          resultEl.classList.remove("hidden");
+          actionsEl.classList.remove("hidden");
+        } catch (error) {
+          alertMessage(lang, "İstek sırasında hata oluştu.", "Error occurred during the request.");
+        } finally {
+          stopLoading(btn, textEl, spinner);
+        }
+      }
+
+      // DOM elemanları
       const generateBtn = document.getElementById("generateBtn");
       const btnText = document.getElementById("btnText");
       const btnSpinner = document.getElementById("btnSpinner");
@@ -245,178 +358,16 @@
       const seoBtnText = document.getElementById("seoBtnText");
       const seoBtnSpinner = document.getElementById("seoBtnSpinner");
 
-      // Fonksiyon: Loading başlat
-      function startLoading(btn, textEl, spinnerEl) {
-        spinnerEl.classList.remove("hidden");
-        textEl.classList.add("hidden");
-        btn.disabled = true;
-        btn.classList.add("cursor-not-allowed", "opacity-60");
-      }
+      generateBtn.addEventListener("click", () => generateContent("description"));
+      generateInstaBtn.addEventListener("click", () => generateContent("insta"));
+      generateSEOBtn.addEventListener("click", () => generateContent("seo"));
 
-      // Fonksiyon: Loading bitir
-      function stopLoading(btn, textEl, spinnerEl) {
-        spinnerEl.classList.add("hidden");
-        textEl.classList.remove("hidden");
-        btn.disabled = false;
-        btn.classList.remove("cursor-not-allowed", "opacity-60");
-      }
-
-      // Ürün Açıklaması Üret
-      generateBtn.addEventListener("click", async () => {
-        const productName = document
-          .getElementById("productInput")
-          .value.trim();
-        const category = document.getElementById("category")?.value || "genel";
-        const length = document.getElementById("length")?.value || "orta";
-
-        if (!productName) return alert("Lütfen ürün adını girin.");
-
-        startLoading(generateBtn, btnText, btnSpinner);
-
-        try {
-          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
-          const response = await fetch("/api/groq-proxy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "llama3-8b-8192",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Sen bir e-ticaret metin yazarı AI'sısın. Kullanıcı sana bir ürün adı verecek ve sen ona kısa ama ikna edici bir ürün açıklaması yazacaksın. Dil: Türkçe.",
-                },
-                {
-                  role: "user",
-                  content: prompt,
-                },
-              ],
-            }),
-          });
-
-          const data = await response.json();
-          const result = data.choices?.[0]?.message?.content;
-
-          document.getElementById("result").innerText =
-            result || "Bir şeyler ters gitti 😕";
-          document.getElementById("result").classList.remove("hidden");
-          document.getElementById("descActions").classList.remove("hidden");
-        } catch (error) {
-          alert("İstek sırasında hata oluştu.");
-        } finally {
-          stopLoading(generateBtn, btnText, btnSpinner);
-        }
-      });
-
-      // Instagram Postu Üret
-      generateInstaBtn.addEventListener("click", async () => {
-        const productName = document
-          .getElementById("productInput")
-          .value.trim();
-        const category = document.getElementById("category")?.value || "genel";
-        const length = document.getElementById("length")?.value || "orta";
-
-        if (!productName) return alert("Lütfen ürün adını girin.");
-
-        startLoading(generateInstaBtn, instaBtnText, instaBtnSpinner);
-
-        try {
-          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
-
-          const response = await fetch("/api/groq-proxy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "llama3-8b-8192",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Sen bir e-ticaret sosyal medya uzmanı AI'sın. Kullanıcının verdiği ürün bilgilerine göre etkileyici bir Instagram postu ve alakalı hashtag'ler üret. Sadece Türkçe yaz. İlk satıra Instagram post metnini yaz, ikinci satıra 'Hashtagler:' yazıp hashtag listesini sırala.",
-                },
-                {
-                  role: "user",
-                  content: prompt,
-                },
-              ],
-            }),
-          });
-
-          const data = await response.json();
-          const result = data.choices?.[0]?.message?.content;
-
-          document.getElementById("instaResult").innerText =
-            result || "Bir şeyler ters gitti 😕";
-          document.getElementById("instaResult").classList.remove("hidden");
-          document.getElementById("instaActions").classList.remove("hidden");
-        } catch (error) {
-          alert("İstek sırasında hata oluştu.");
-        } finally {
-          stopLoading(generateInstaBtn, instaBtnText, instaBtnSpinner);
-        }
-      });
-
-      // SEO Metni Üret
-      generateSEOBtn.addEventListener("click", async () => {
-        const productName = document
-          .getElementById("productInput")
-          .value.trim();
-        const category = document.getElementById("category")?.value || "genel";
-        const length = document.getElementById("length")?.value || "orta";
-
-        if (!productName) return alert("Lütfen ürün adını girin.");
-
-        startLoading(generateSEOBtn, seoBtnText, seoBtnSpinner);
-
-        try {
-          const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}. SEO başlık ve açıklama üret.`;
-
-          const response = await fetch("/api/groq-proxy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "llama3-8b-8192",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Sen bir e-ticaret SEO uzmanı AI'sın. Verilen ürün bilgilerine göre Türkçe bir SEO meta başlığı (60 karakteri geçmesin) ve ardından bir meta açıklama (150–160 karakter) üret. Şu formatı koru:\n\nMeta Title: ...\nMeta Description: ...",
-                },
-                {
-                  role: "user",
-                  content: prompt,
-                },
-              ],
-            }),
-          });
-
-          const data = await response.json();
-          const result = data.choices?.[0]?.message?.content;
-
-          document.getElementById("seoResult").innerText =
-            result || "Bir şeyler ters gitti 😕";
-          document.getElementById("seoResult").classList.remove("hidden");
-          document.getElementById("seoActions").classList.remove("hidden");
-        } catch (error) {
-          alert("İstek sırasında hata oluştu.");
-        } finally {
-          stopLoading(generateSEOBtn, seoBtnText, seoBtnSpinner);
-        }
-      });
-
-      // Kopyala / İndir İşlemleri
+      // Kopyala ve indir butonları
       document.getElementById("copyBtn").addEventListener("click", () => {
         const content = document.getElementById("result").innerText;
         navigator.clipboard.writeText(content);
         alert("Açıklama kopyalandı!");
       });
-
       document.getElementById("downloadDesc").addEventListener("click", () => {
         const content = document.getElementById("result").innerText;
         downloadText("urun_aciklamasi.txt", content);
@@ -427,7 +378,6 @@
         navigator.clipboard.writeText(content);
         alert("Instagram içeriği kopyalandı!");
       });
-
       document.getElementById("downloadInsta").addEventListener("click", () => {
         const content = document.getElementById("instaResult").innerText;
         downloadText("instagram_icerigi.txt", content);
@@ -438,7 +388,6 @@
         navigator.clipboard.writeText(content);
         alert("SEO metni kopyalandı!");
       });
-
       document.getElementById("downloadSEO").addEventListener("click", () => {
         const content = document.getElementById("seoResult").innerText;
         downloadText("seo_metni.txt", content);

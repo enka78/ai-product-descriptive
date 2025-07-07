@@ -65,6 +65,7 @@
         placeholder="Ürün adını yazın..."
         class="w-full p-3 border rounded mb-4"
       />
+      <!-- Ürün Açıklaması Butonu -->
       <button
         id="generateBtn"
         class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2"
@@ -72,6 +73,64 @@
         <span id="btnText">Açıklama Oluştur</span>
         <svg
           id="btnSpinner"
+          class="animate-spin h-5 w-5 text-white hidden"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      </button>
+
+      <!-- Instagram Postu Oluştur Butonu -->
+      <button
+        id="generateInsta"
+        class="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded flex items-center justify-center gap-2"
+      >
+        <span id="instaBtnText">Instagram Postu Oluştur</span>
+        <svg
+          id="instaBtnSpinner"
+          class="animate-spin h-5 w-5 text-white hidden"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      </button>
+
+      <!-- SEO Metni Oluştur Butonu -->
+      <button
+        id="generateSEO"
+        class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded flex items-center justify-center gap-2"
+      >
+        <span id="seoBtnText">SEO Metni Oluştur</span>
+        <svg
+          id="seoBtnSpinner"
           class="animate-spin h-5 w-5 text-white hidden"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -111,17 +170,11 @@
           İndir
         </button>
       </div>
-      <button
-        id="generateInsta"
-        class="w-full mt-4 bg-pink-600 hover:bg-pink-700 text-white font-bold p-3 rounded"
-      >
-        Instagram Postu Oluştur
-      </button>
+
       <div
         id="instaResult"
         class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
       ></div>
-
       <div id="instaActions" class="mt-2 flex justify-center gap-2 hidden">
         <button
           id="copyInsta"
@@ -136,12 +189,6 @@
           İndir
         </button>
       </div>
-      <button
-        id="generateSEO"
-        class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded"
-      >
-        SEO Metni Oluştur
-      </button>
 
       <div
         id="seoResult"
@@ -176,7 +223,7 @@
     </div>
 
     <script>
-      // ✅ Ortak indirme fonksiyonu
+      // Ortak indirme fonksiyonu
       function downloadText(filename, text) {
         const blob = new Blob([text], { type: "text/plain" });
         const link = document.createElement("a");
@@ -185,11 +232,36 @@
         link.click();
       }
 
+      // Butonlar ve spinnerlar
       const generateBtn = document.getElementById("generateBtn");
       const btnText = document.getElementById("btnText");
       const btnSpinner = document.getElementById("btnSpinner");
 
-      // ✅ Ürün Açıklaması Üret
+      const generateInstaBtn = document.getElementById("generateInsta");
+      const instaBtnText = document.getElementById("instaBtnText");
+      const instaBtnSpinner = document.getElementById("instaBtnSpinner");
+
+      const generateSEOBtn = document.getElementById("generateSEO");
+      const seoBtnText = document.getElementById("seoBtnText");
+      const seoBtnSpinner = document.getElementById("seoBtnSpinner");
+
+      // Fonksiyon: Loading başlat
+      function startLoading(btn, textEl, spinnerEl) {
+        spinnerEl.classList.remove("hidden");
+        textEl.classList.add("hidden");
+        btn.disabled = true;
+        btn.classList.add("cursor-not-allowed", "opacity-60");
+      }
+
+      // Fonksiyon: Loading bitir
+      function stopLoading(btn, textEl, spinnerEl) {
+        spinnerEl.classList.add("hidden");
+        textEl.classList.remove("hidden");
+        btn.disabled = false;
+        btn.classList.remove("cursor-not-allowed", "opacity-60");
+      }
+
+      // Ürün Açıklaması Üret
       generateBtn.addEventListener("click", async () => {
         const productName = document
           .getElementById("productInput")
@@ -199,11 +271,7 @@
 
         if (!productName) return alert("Lütfen ürün adını girin.");
 
-        // Loading başlat: spinner göster, yazı gizle, butonu pasif yap
-        btnSpinner.classList.remove("hidden");
-        btnText.classList.add("hidden");
-        generateBtn.disabled = true;
-        generateBtn.classList.add("cursor-not-allowed", "opacity-60");
+        startLoading(generateBtn, btnText, btnSpinner);
 
         try {
           const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
@@ -238,39 +306,23 @@
         } catch (error) {
           alert("İstek sırasında hata oluştu.");
         } finally {
-          // Loading bitir: spinner gizle, yazı göster, butonu aktif yap
-          btnSpinner.classList.add("hidden");
-          btnText.classList.remove("hidden");
-          generateBtn.disabled = false;
-          generateBtn.classList.remove("cursor-not-allowed", "opacity-60");
+          stopLoading(generateBtn, btnText, btnSpinner);
         }
       });
 
-      // ✅ Açıklama Kopyala / İndir
-      document.getElementById("copyBtn").addEventListener("click", () => {
-        const content = document.getElementById("result").innerText;
-        navigator.clipboard.writeText(content);
-        alert("Açıklama kopyalandı!");
-      });
+      // Instagram Postu Üret
+      generateInstaBtn.addEventListener("click", async () => {
+        const productName = document
+          .getElementById("productInput")
+          .value.trim();
+        const category = document.getElementById("category")?.value || "genel";
+        const length = document.getElementById("length")?.value || "orta";
 
-      document.getElementById("downloadDesc").addEventListener("click", () => {
-        const content = document.getElementById("result").innerText;
-        downloadText("urun_aciklamasi.txt", content);
-      });
+        if (!productName) return alert("Lütfen ürün adını girin.");
 
-      // ✅ Instagram İçeriği Üret
-      document
-        .getElementById("generateInsta")
-        .addEventListener("click", async () => {
-          const productName = document
-            .getElementById("productInput")
-            .value.trim();
-          const category =
-            document.getElementById("category")?.value || "genel";
-          const length = document.getElementById("length")?.value || "orta";
+        startLoading(generateInstaBtn, instaBtnText, instaBtnSpinner);
 
-          if (!productName) return alert("Lütfen ürün adını girin.");
-
+        try {
           const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
 
           const response = await fetch("/api/groq-proxy", {
@@ -301,33 +353,26 @@
             result || "Bir şeyler ters gitti 😕";
           document.getElementById("instaResult").classList.remove("hidden");
           document.getElementById("instaActions").classList.remove("hidden");
-        });
-
-      // ✅ Instagram Kopyala / İndir
-      document.getElementById("copyInsta").addEventListener("click", () => {
-        const content = document.getElementById("instaResult").innerText;
-        navigator.clipboard.writeText(content);
-        alert("Instagram içeriği kopyalandı!");
+        } catch (error) {
+          alert("İstek sırasında hata oluştu.");
+        } finally {
+          stopLoading(generateInstaBtn, instaBtnText, instaBtnSpinner);
+        }
       });
 
-      document.getElementById("downloadInsta").addEventListener("click", () => {
-        const content = document.getElementById("instaResult").innerText;
-        downloadText("instagram_icerigi.txt", content);
-      });
+      // SEO Metni Üret
+      generateSEOBtn.addEventListener("click", async () => {
+        const productName = document
+          .getElementById("productInput")
+          .value.trim();
+        const category = document.getElementById("category")?.value || "genel";
+        const length = document.getElementById("length")?.value || "orta";
 
-      // ✅ SEO Metni Üret
-      document
-        .getElementById("generateSEO")
-        .addEventListener("click", async () => {
-          const productName = document
-            .getElementById("productInput")
-            .value.trim();
-          const category =
-            document.getElementById("category")?.value || "genel";
-          const length = document.getElementById("length")?.value || "orta";
+        if (!productName) return alert("Lütfen ürün adını girin.");
 
-          if (!productName) return alert("Lütfen ürün adını girin.");
+        startLoading(generateSEOBtn, seoBtnText, seoBtnSpinner);
 
+        try {
           const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}. SEO başlık ve açıklama üret.`;
 
           const response = await fetch("/api/groq-proxy", {
@@ -358,9 +403,36 @@
             result || "Bir şeyler ters gitti 😕";
           document.getElementById("seoResult").classList.remove("hidden");
           document.getElementById("seoActions").classList.remove("hidden");
-        });
+        } catch (error) {
+          alert("İstek sırasında hata oluştu.");
+        } finally {
+          stopLoading(generateSEOBtn, seoBtnText, seoBtnSpinner);
+        }
+      });
 
-      // ✅ SEO Kopyala / İndir
+      // Kopyala / İndir İşlemleri
+      document.getElementById("copyBtn").addEventListener("click", () => {
+        const content = document.getElementById("result").innerText;
+        navigator.clipboard.writeText(content);
+        alert("Açıklama kopyalandı!");
+      });
+
+      document.getElementById("downloadDesc").addEventListener("click", () => {
+        const content = document.getElementById("result").innerText;
+        downloadText("urun_aciklamasi.txt", content);
+      });
+
+      document.getElementById("copyInsta").addEventListener("click", () => {
+        const content = document.getElementById("instaResult").innerText;
+        navigator.clipboard.writeText(content);
+        alert("Instagram içeriği kopyalandı!");
+      });
+
+      document.getElementById("downloadInsta").addEventListener("click", () => {
+        const content = document.getElementById("instaResult").innerText;
+        downloadText("instagram_icerigi.txt", content);
+      });
+
       document.getElementById("copySEO").addEventListener("click", () => {
         const content = document.getElementById("seoResult").innerText;
         navigator.clipboard.writeText(content);

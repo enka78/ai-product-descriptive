@@ -2,7 +2,7 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AI Ürün Açıklayıcı</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
@@ -67,10 +67,32 @@
       />
       <button
         id="generateBtn"
-        class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition font-semibold"
+        class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2"
       >
-        Açıklama Oluştur
+        <span id="btnText">Açıklama Oluştur</span>
+        <svg
+          id="btnSpinner"
+          class="animate-spin h-5 w-5 text-white hidden"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
       </button>
+
       <div
         id="result"
         class="mt-4 p-4 border rounded text-sm bg-gray-100 whitespace-pre-line hidden"
@@ -163,19 +185,27 @@
         link.click();
       }
 
+      const generateBtn = document.getElementById("generateBtn");
+      const btnText = document.getElementById("btnText");
+      const btnSpinner = document.getElementById("btnSpinner");
+
       // ✅ Ürün Açıklaması Üret
-      document
-        .getElementById("generateBtn")
-        .addEventListener("click", async () => {
-          const productName = document
-            .getElementById("productInput")
-            .value.trim();
-          const category =
-            document.getElementById("category")?.value || "genel";
-          const length = document.getElementById("length")?.value || "orta";
+      generateBtn.addEventListener("click", async () => {
+        const productName = document
+          .getElementById("productInput")
+          .value.trim();
+        const category = document.getElementById("category")?.value || "genel";
+        const length = document.getElementById("length")?.value || "orta";
 
-          if (!productName) return alert("Lütfen ürün adını girin.");
+        if (!productName) return alert("Lütfen ürün adını girin.");
 
+        // Loading başlat: spinner göster, yazı gizle, butonu pasif yap
+        btnSpinner.classList.remove("hidden");
+        btnText.classList.add("hidden");
+        generateBtn.disabled = true;
+        generateBtn.classList.add("cursor-not-allowed", "opacity-60");
+
+        try {
           const prompt = `Ürün adı: ${productName}. Kategori: ${category}. Açıklama uzunluğu: ${length}.`;
           const response = await fetch("/api/groq-proxy", {
             method: "POST",
@@ -205,7 +235,16 @@
             result || "Bir şeyler ters gitti 😕";
           document.getElementById("result").classList.remove("hidden");
           document.getElementById("descActions").classList.remove("hidden");
-        });
+        } catch (error) {
+          alert("İstek sırasında hata oluştu.");
+        } finally {
+          // Loading bitir: spinner gizle, yazı göster, butonu aktif yap
+          btnSpinner.classList.add("hidden");
+          btnText.classList.remove("hidden");
+          generateBtn.disabled = false;
+          generateBtn.classList.remove("cursor-not-allowed", "opacity-60");
+        }
+      });
 
       // ✅ Açıklama Kopyala / İndir
       document.getElementById("copyBtn").addEventListener("click", () => {
@@ -294,7 +333,7 @@
           const response = await fetch("/api/groq-proxy", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               model: "llama3-8b-8192",
